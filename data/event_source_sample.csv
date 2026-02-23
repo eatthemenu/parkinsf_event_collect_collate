@@ -1,0 +1,5 @@
+venue_id,venue_name,schedule_url,site_type
+curran,Curran Theater,https://sfcurran.com/events,single_venue
+sf_symphony,San Francisco Symphony,https://www.sfsymphony.org/Buy-Tickets/Calendar,single_venue
+act_rembe,ACT Toni Rembe Theater,https://www.act-sf.org/whats-on/,multi_venue
+act_strand,ACT Strand Theater,https://www.act-sf.org/whats-on/,multi_venue
