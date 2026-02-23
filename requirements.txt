@@ -1,0 +1,23 @@
+# Browser automation
+playwright>=1.40
+
+# AI provider SDKs
+openai>=1.30
+anthropic>=0.30
+google-genai>=1.0
+
+# HTTP
+httpx>=0.25
+
+# Config and environment
+python-dotenv>=1.0
+pyyaml>=6.0
+
+# Venue name matching
+thefuzz>=0.20
+python-Levenshtein>=0.25
+
+# Development
+pytest>=8.0
+pytest-asyncio>=0.23
+ruff>=0.4

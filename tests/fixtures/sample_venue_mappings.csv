@@ -1,0 +1,4 @@
+venue_id,canonical_name,latitude,longitude,radius,icon,affected_garages_ids
+curran,"Curran Theater",37.7862,-122.4123,0.3,theater,"1"
+sf_symphony,"San Francisco Symphony",37.7782,-122.4199,0.4,music,"3"
+act_rembe,"ACT Toni Rembe Theater",37.7861,-122.4124,0.3,theater,"1"

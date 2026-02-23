@@ -1,0 +1,22 @@
+{
+    "events": [
+        {
+            "label": "Hamilton",
+            "location_label": null,
+            "event_start_date": "2026-04-15",
+            "event_start_time": "19:30:00",
+            "confidence": "high",
+            "notes": null,
+            "requires_detail_page": false
+        },
+        {
+            "label": "Chicago",
+            "location_label": null,
+            "event_start_date": "2026-04-22",
+            "event_start_time": "20:00:00",
+            "confidence": "high",
+            "notes": null,
+            "requires_detail_page": false
+        }
+    ]
+}

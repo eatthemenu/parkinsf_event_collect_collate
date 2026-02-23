@@ -1,0 +1,70 @@
+# Known cookie consent modal CSS selectors.
+# Tried in order. First match that exists and is visible wins.
+# site_pattern: "*" means try on all sites.
+- css_selector: "#onetrust-accept-btn-handler"
+  description: "OneTrust Accept All"
+  site_pattern: "*"
+
+- css_selector: ".onetrust-accept-btn-handler"
+  description: "OneTrust Accept All (class)"
+  site_pattern: "*"
+
+- css_selector: "#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"
+  description: "Cookiebot Allow All"
+  site_pattern: "*"
+
+- css_selector: "button[id*='cookie'][id*='accept']"
+  description: "Generic cookie accept button by ID keywords"
+  site_pattern: "*"
+
+- css_selector: "button[class*='cookie'][class*='accept']"
+  description: "Generic cookie accept button by class keywords"
+  site_pattern: "*"
+
+- css_selector: "button[aria-label*='Accept']"
+  description: "Accept button by aria-label (capitalized)"
+  site_pattern: "*"
+
+- css_selector: "button[aria-label*='accept']"
+  description: "Accept button by aria-label (lowercase)"
+  site_pattern: "*"
+
+- css_selector: ".cc-btn.cc-allow"
+  description: "CookieConsent.js allow button"
+  site_pattern: "*"
+
+- css_selector: "#gdpr-consent-tool-wrapper button.fc-cta-consent"
+  description: "Funding Choices consent button"
+  site_pattern: "*"
+
+- css_selector: "button[data-testid='cookie-accept']"
+  description: "Test-id based accept button"
+  site_pattern: "*"
+
+- css_selector: ".cookie-notice-accept"
+  description: "Cookie notice accept class"
+  site_pattern: "*"
+
+- css_selector: "[class*='cookie'] [class*='agree']"
+  description: "Cookie container agree element (broad match)"
+  site_pattern: "*"
+
+- css_selector: "button:text('Accept All')"
+  description: "Playwright text selector: Accept All"
+  site_pattern: "*"
+
+- css_selector: "button:text('Accept Cookies')"
+  description: "Playwright text selector: Accept Cookies"
+  site_pattern: "*"
+
+- css_selector: "button:text('I Agree')"
+  description: "Playwright text selector: I Agree"
+  site_pattern: "*"
+
+- css_selector: "button:text('Got it')"
+  description: "Playwright text selector: Got it"
+  site_pattern: "*"
+
+- css_selector: "button:text('OK')"
+  description: "Playwright text selector: OK"
+  site_pattern: "*"

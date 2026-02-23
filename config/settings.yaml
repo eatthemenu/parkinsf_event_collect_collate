@@ -1,0 +1,36 @@
+# Retry settings
+max_retry_count: 2
+ai_max_retry_count: 3
+retry_backoff_base_seconds: 2.0
+
+# Budget cap per run (USD)
+max_cost_usd: 40.0
+
+# How many months ahead to capture events
+event_window_months: 6
+
+# Browser / page interaction
+page_load_delay_seconds: 2.0
+max_load_more_clicks: 20
+max_calendar_page_clicks: 12
+browser_restart_interval: 10
+scroll_pause_seconds: 1.0
+
+# Screenshot settings
+screenshot_max_height_px: 3000
+viewport_width: 1280
+viewport_height: 900
+screenshot_overlap_px: 100
+
+# Venue name matching
+fuzzy_match_threshold: 85
+
+# AI providers
+primary_provider: "claude-sonnet"
+fallback_provider: "gpt-4o"
+
+# Logging
+log_level: "INFO"
+
+# Data retention (days before auto-clean)
+data_retention_days: 30
