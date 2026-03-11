@@ -495,7 +495,7 @@ async def run(args: argparse.Namespace) -> int:
 
     # Load config.
     try:
-        venue_mappings = load_venue_mappings(data_dir)
+        venue_mappings = load_venue_mappings(config_dir)
         venue_aliases = load_venue_aliases(config_dir)
         cookie_selectors = load_cookie_selectors(config_dir)
     except (FileNotFoundError, ValueError) as exc:

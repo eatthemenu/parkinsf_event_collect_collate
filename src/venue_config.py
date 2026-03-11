@@ -159,7 +159,7 @@ def load_settings(config_dir: Path) -> Settings:
     return settings
 
 
-def load_venue_mappings(data_dir: Path) -> dict[str, VenueMapping]:
+def load_venue_mappings(config_dir: Path) -> dict[str, VenueMapping]:
     """Load venue geographic and display metadata from venue_to_lat_lon_mapping.csv.
 
     The CSV must contain the following headers (in any order):
@@ -175,7 +175,7 @@ def load_venue_mappings(data_dir: Path) -> dict[str, VenueMapping]:
     The string ``"NULL"`` in any field is normalised to an empty string.
 
     Args:
-        data_dir: Directory that contains ``venue_to_lat_lon_mapping.csv``.
+        config_dir: Directory that contains ``venue_to_lat_lon_mapping.csv``.
 
     Returns:
         Dict mapping ``location_label`` strings to :class:`VenueMapping` instances.
@@ -184,7 +184,7 @@ def load_venue_mappings(data_dir: Path) -> dict[str, VenueMapping]:
         FileNotFoundError: If ``venue_to_lat_lon_mapping.csv`` does not exist.
         ValueError: If required columns are absent from the CSV header.
     """
-    mappings_path = data_dir / "venue_to_lat_lon_mapping.csv"
+    mappings_path = config_dir / "venue_to_lat_lon_mapping.csv"
 
     if not mappings_path.exists():
         raise FileNotFoundError(f"venue_to_lat_lon_mapping.csv not found at {mappings_path}")
