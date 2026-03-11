@@ -43,6 +43,11 @@ data/screenshots/
 data/ai_responses/
 *.log
 
+# output/ — provider comparison CSVs are tracked; ignore everything else
+output/*
+!output/.gitkeep
+!output/*.csv
+
 # IDE
 .idea/
 .vscode/
