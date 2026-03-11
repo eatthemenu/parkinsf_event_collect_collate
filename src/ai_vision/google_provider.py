@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 _TOKENS_PER_IMAGE = 800
 
 MODEL_IDS: dict[str, str] = {
-    "gemini-flash": "gemini-2.5-flash-preview-04-17",
-    "gemini-pro": "gemini-2.0-flash",
+    "gemini-flash": "gemini-2.0-flash",
+    "gemini-pro": "gemini-1.5-pro",
 }
 
 
@@ -206,7 +206,7 @@ class GoogleProvider(VisionProvider):
         """Return the full model ID being used.
 
         Returns:
-            The Gemini model ID string, e.g. 'gemini-2.5-flash-preview-04-17'.
+            The Gemini model ID string, e.g. 'gemini-2.0-flash'.
         """
         return self._model_id
 
