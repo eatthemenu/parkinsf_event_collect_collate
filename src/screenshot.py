@@ -135,8 +135,7 @@ async def take_screenshots(
                 # Continue with remaining chunks even if one fails.
 
     logger.info(
-        "take_screenshots: captured %d screenshot(s) for venue_id=%s "
-        "(page height=%d px)",
+        "take_screenshots: captured %d screenshot(s) for venue_id=%s (page height=%d px)",
         len(screenshots),
         venue_id,
         total_height,

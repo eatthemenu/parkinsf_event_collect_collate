@@ -29,9 +29,7 @@ class JsonFormatter(logging.Formatter):
             A single-line JSON string representing the log entry.
         """
         entry: dict = {
-            "timestamp": datetime.utcfromtimestamp(record.created).strftime(
-                "%Y-%m-%dT%H:%M:%S.%f"
-            )
+            "timestamp": datetime.utcfromtimestamp(record.created).strftime("%Y-%m-%dT%H:%M:%S.%f")
             + "Z",
             "level": record.levelname,
             "logger": record.name,

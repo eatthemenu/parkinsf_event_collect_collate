@@ -1,4 +1,5 @@
 """Abstract base class for AI vision providers."""
+
 from abc import ABC, abstractmethod
 
 

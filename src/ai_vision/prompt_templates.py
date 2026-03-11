@@ -67,9 +67,7 @@ def _build_list_page_prompt(
             f"All events on this page take place at '{venue_name}'. "
             f"Set 'location_label' to null for every event."
         )
-        location_label_note = (
-            "  - location_label: null (this is a single-venue site)."
-        )
+        location_label_note = "  - location_label: null (this is a single-venue site)."
 
     prompt = f"""You are an expert event data extractor for SF Bay Area live music and entertainment venues.
 
