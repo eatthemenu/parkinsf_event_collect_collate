@@ -244,7 +244,9 @@ def load_venue_mappings(config_dir: Path) -> dict[str, VenueMapping]:
                     longitude=float(row["longitude"]),
                     icon=_null_to_empty(row["icon"]),
                     radius=float(row["radius"]),
-                    affected_garages_ids=_null_to_empty(row["affected_garages_ids"]),
+                    affected_garages_ids=_null_to_empty(row["affected_garages_ids"])
+                    .replace(", ", ",")
+                    .replace(" ,", ","),
                     affected_areas=_null_to_empty(row["affected_areas"]),
                 )
             except (ValueError, KeyError) as exc:

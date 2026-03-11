@@ -18,7 +18,8 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
-from playwright.async_api import async_playwright
+from playwright.async_api import Page, async_playwright
+from thefuzz import process as fuzz_process
 
 from .ai_vision import CostTracker, get_provider
 from .ai_vision.prompt_templates import build_extraction_prompt
@@ -44,6 +45,85 @@ from .venue_config import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Detail-URL resolution helpers
+# ---------------------------------------------------------------------------
+
+
+async def _extract_event_links(page: Page) -> list[dict]:
+    """Extract all internal anchor links from the current page.
+
+    Args:
+        page: Playwright Page to query.
+
+    Returns:
+        List of ``{"text": str, "url": str}`` dicts, deduplicated by URL,
+        capped at 300 entries.
+    """
+    try:
+        raw: list[dict] = await page.evaluate(
+            """() => Array.from(document.querySelectorAll('a[href]'))
+                .map(a => ({
+                    text: a.innerText.trim().replace(/\\s+/g, ' ').slice(0, 150),
+                    url: a.href
+                }))
+                .filter(l => l.url.startsWith('http') && l.text.length > 3)"""
+        )
+    except Exception as exc:
+        logger.debug("_extract_event_links: evaluate failed: %s", exc)
+        return []
+
+    seen: set[str] = set()
+    result: list[dict] = []
+    for link in raw:
+        url = link["url"]
+        if url not in seen:
+            seen.add(url)
+            result.append(link)
+            if len(result) >= 300:
+                break
+    return result
+
+
+def _resolve_detail_urls(page_links: list[dict], raw_events: list[dict]) -> list[dict]:
+    """Match AI-extracted event labels to page links to populate detail_url.
+
+    Uses fuzzy string matching (threshold ≥ 65) between event labels and link
+    text. Only fills events that have ``requires_detail_page=True`` and no
+    existing ``detail_url``.
+
+    Args:
+        page_links: Links extracted by :func:`_extract_event_links`.
+        raw_events: Raw event dicts from the AI provider.
+
+    Returns:
+        Raw event dicts with ``detail_url`` populated where a match was found.
+    """
+    if not page_links or not raw_events:
+        return raw_events
+
+    link_texts = [lnk["text"].lower() for lnk in page_links]
+    link_urls = [lnk["url"] for lnk in page_links]
+
+    enriched: list[dict] = []
+    for event in raw_events:
+        if event.get("requires_detail_page") and not event.get("detail_url"):
+            label = (event.get("label") or "").strip()
+            if label:
+                match_result = fuzz_process.extractOne(label.lower(), link_texts)
+                if match_result and match_result[1] >= 65:
+                    idx = link_texts.index(match_result[0])
+                    event = {**event, "detail_url": link_urls[idx]}
+                    logger.debug(
+                        "_resolve_detail_urls: matched %r -> %s (score=%d)",
+                        label,
+                        link_urls[idx],
+                        match_result[1],
+                    )
+        enriched.append(event)
+    return enriched
 
 
 # ---------------------------------------------------------------------------
@@ -345,6 +425,16 @@ async def _process_venue(
                 # Free local work: scroll, load more, calendar pagination.
                 await expand_page(page, settings)
 
+                # Capture all event links before screenshotting (free; used
+                # later to populate detail_url for requires_detail_page events).
+                page_links = await _extract_event_links(page)
+                logger.debug(
+                    "Extracted %d page links for venue_id=%s",
+                    len(page_links),
+                    venue_id,
+                    extra={"venue_id": venue_id},
+                )
+
                 if dry_run:
                     logger.info(
                         "dry-run: skipping AI call for venue_id=%s",
@@ -386,6 +476,9 @@ async def _process_venue(
                     venue_id,
                     extra={"venue_id": venue_id},
                 )
+
+                # Populate detail_url by fuzzy-matching event labels to page links.
+                raw_events = _resolve_detail_urls(page_links, raw_events)
 
                 # Fetch detail pages for events that require them.
                 enriched_events: list[dict] = []
