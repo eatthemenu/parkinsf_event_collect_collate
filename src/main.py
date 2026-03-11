@@ -193,9 +193,7 @@ def _process_raw_events(
         if venue_source.site_type == "single_venue":
             name_to_normalize = venue_source.venue_name
         else:
-            name_to_normalize = (
-                raw_event.get("location_label") or venue_source.venue_name
-            )
+            name_to_normalize = raw_event.get("location_label") or venue_source.venue_name
 
         resolved_id, _method = normalizer.normalize(name_to_normalize)
 
@@ -226,9 +224,7 @@ def _process_raw_events(
             )
             continue
 
-        canonical_name = (
-            normalizer.get_canonical_name(resolved_id) or resolved_mapping.canonical_name
-        )
+        canonical_name = resolved_id
 
         assembled = assemble_event(
             raw_event=raw_event,
@@ -308,13 +304,6 @@ async def _process_venue(
     """
     venue_id = venue_source.venue_id
     run_report.record_venue_attempt(venue_id)
-
-    venue_mapping = venue_mappings.get(venue_id)
-    if venue_mapping is None:
-        reason = f"No venue_mapping found for venue_id={venue_id!r}"
-        logger.error(reason, extra={"venue_id": venue_id})
-        run_report.record_venue_skip(venue_id, reason)
-        return []
 
     venue_context: dict = {
         "venue_id": venue_id,
@@ -402,9 +391,7 @@ async def _process_venue(
                 enriched_events: list[dict] = []
                 for raw_event in raw_events:
                     if raw_event.get("requires_detail_page"):
-                        detail_url = (
-                            raw_event.get("detail_url") or raw_event.get("web")
-                        )
+                        detail_url = raw_event.get("detail_url") or raw_event.get("web")
                         if detail_url:
                             extra_fields = await fetch_event_detail(
                                 page=page,
@@ -461,9 +448,7 @@ async def _process_venue(
                 )
                 await asyncio.sleep(backoff)
             else:
-                run_report.record_venue_skip(
-                    venue_id, f"Max retries exceeded: {exc}"
-                )
+                run_report.record_venue_skip(venue_id, f"Max retries exceeded: {exc}")
 
     return []
 
@@ -510,7 +495,7 @@ async def run(args: argparse.Namespace) -> int:
 
     # Load config.
     try:
-        venue_mappings = load_venue_mappings(config_dir)
+        venue_mappings = load_venue_mappings(data_dir)
         venue_aliases = load_venue_aliases(config_dir)
         cookie_selectors = load_cookie_selectors(config_dir)
     except (FileNotFoundError, ValueError) as exc:
@@ -532,9 +517,7 @@ async def run(args: argparse.Namespace) -> int:
         elif provider_name in ("claude-sonnet", "claude-opus") and not anthropic_key:
             key_needed = "ANTHROPIC_API_KEY"
         if key_needed:
-            logger.critical(
-                "Required API key %r is not set in .env. Cannot proceed.", key_needed
-            )
+            logger.critical("Required API key %r is not set in .env. Cannot proceed.", key_needed)
             return 1
 
     # Determine event window.
@@ -605,8 +588,7 @@ async def run(args: argparse.Namespace) -> int:
                     cheapest = cost_tracker.get_cheapest_provider_name()
                     if cheapest != settings.primary_provider:
                         logger.warning(
-                            "Budget cap exceeded ($%.4f / $%.4f); "
-                            "switching to provider '%s'",
+                            "Budget cap exceeded ($%.4f / $%.4f); switching to provider '%s'",
                             cost_tracker.get_total_cost(),
                             settings.max_cost_usd,
                             cheapest,
@@ -622,9 +604,7 @@ async def run(args: argparse.Namespace) -> int:
                                 anthropic_api_key=anthropic_key,
                             )
                         except ValueError as exc:
-                            logger.error(
-                                "Could not switch to provider '%s': %s", cheapest, exc
-                            )
+                            logger.error("Could not switch to provider '%s': %s", cheapest, exc)
 
                 venue_events = await _process_venue(
                     venue_source=venue_source,

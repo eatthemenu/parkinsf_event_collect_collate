@@ -10,48 +10,47 @@ from src.venue_config import VenueMapping
 # ---------------------------------------------------------------------------
 
 
-def _make_mapping(venue_id: str, canonical_name: str) -> VenueMapping:
+def _make_mapping(location_label: str) -> VenueMapping:
     """Build a minimal VenueMapping for testing.
 
     Args:
-        venue_id: Stable venue identifier.
-        canonical_name: Display name for the venue.
+        location_label: Authoritative display name for the venue.
 
     Returns:
         A :class:`~venue_config.VenueMapping` with placeholder coordinates.
     """
     return VenueMapping(
-        venue_id=venue_id,
-        canonical_name=canonical_name,
+        location_label=location_label,
         latitude=37.7862,
         longitude=-122.4123,
+        icon="/img/event_icon/theater.png",
         radius=0.3,
-        icon="theater",
         affected_garages_ids="1",
+        affected_areas="",
     )
 
 
 @pytest.fixture()
 def aliases() -> dict[str, str]:
-    """Return a representative lowercase alias -> venue_id mapping."""
+    """Return a representative lowercase alias -> location_label mapping."""
     return {
-        "curran theater": "curran",
-        "the curran": "curran",
-        "san francisco symphony": "sf_symphony",
-        "sf symphony": "sf_symphony",
-        "davies symphony hall": "sf_symphony",
-        "act toni rembe theater": "act_rembe",
-        "toni rembe theater": "act_rembe",
+        "curran theater": "Curran Theater",
+        "the curran": "Curran Theater",
+        "san francisco symphony": "Davies Symphony Hall",
+        "sf symphony": "Davies Symphony Hall",
+        "davies symphony hall": "Davies Symphony Hall",
+        "act toni rembe theater": "ACT Toni Rembe Theater",
+        "toni rembe theater": "ACT Toni Rembe Theater",
     }
 
 
 @pytest.fixture()
 def mappings() -> dict[str, VenueMapping]:
-    """Return a representative venue_id -> VenueMapping dict."""
+    """Return a representative location_label -> VenueMapping dict."""
     return {
-        "curran": _make_mapping("curran", "Curran Theater"),
-        "sf_symphony": _make_mapping("sf_symphony", "San Francisco Symphony"),
-        "act_rembe": _make_mapping("act_rembe", "ACT Toni Rembe Theater"),
+        "Curran Theater": _make_mapping("Curran Theater"),
+        "Davies Symphony Hall": _make_mapping("Davies Symphony Hall"),
+        "ACT Toni Rembe Theater": _make_mapping("ACT Toni Rembe Theater"),
     }
 
 
@@ -68,37 +67,37 @@ def normalizer(aliases: dict, mappings: dict) -> VenueNormalizer:
 
 def test_tier1_exact_match(normalizer: VenueNormalizer) -> None:
     """An exact alias string (correct case) should resolve via Tier 1."""
-    venue_id, method = normalizer.normalize("Curran Theater")
-    assert venue_id == "curran"
+    location_label, method = normalizer.normalize("Curran Theater")
+    assert location_label == "Curran Theater"
     assert method == "alias"
 
 
 def test_tier1_case_insensitive(normalizer: VenueNormalizer) -> None:
     """Alias lookup should be case-insensitive."""
-    venue_id, method = normalizer.normalize("CURRAN THEATER")
-    assert venue_id == "curran"
+    location_label, method = normalizer.normalize("CURRAN THEATER")
+    assert location_label == "Curran Theater"
     assert method == "alias"
 
 
 def test_tier1_strips_leading_trailing_whitespace(normalizer: VenueNormalizer) -> None:
     """Leading and trailing whitespace should be stripped before alias lookup."""
-    venue_id, method = normalizer.normalize("  Curran Theater  ")
-    assert venue_id == "curran"
+    location_label, method = normalizer.normalize("  Curran Theater  ")
+    assert location_label == "Curran Theater"
     assert method == "alias"
 
 
 def test_tier1_alternative_alias_same_venue(normalizer: VenueNormalizer) -> None:
-    """Multiple aliases mapping to the same venue_id should all resolve."""
+    """Multiple aliases mapping to the same location_label should all resolve."""
     v1, _ = normalizer.normalize("Davies Symphony Hall")
     v2, _ = normalizer.normalize("SF Symphony")
-    assert v1 == "sf_symphony"
-    assert v2 == "sf_symphony"
+    assert v1 == "Davies Symphony Hall"
+    assert v2 == "Davies Symphony Hall"
 
 
 def test_tier1_multi_venue_alias(normalizer: VenueNormalizer) -> None:
-    """An alias for the act_rembe venue should resolve correctly."""
-    venue_id, method = normalizer.normalize("Toni Rembe Theater")
-    assert venue_id == "act_rembe"
+    """An alias for the ACT Rembe venue should resolve correctly."""
+    location_label, method = normalizer.normalize("Toni Rembe Theater")
+    assert location_label == "ACT Toni Rembe Theater"
     assert method == "alias"
 
 
@@ -110,20 +109,20 @@ def test_tier1_multi_venue_alias(normalizer: VenueNormalizer) -> None:
 def test_tier2_close_typo_resolves(normalizer: VenueNormalizer) -> None:
     """A name with a small typo should resolve via Tier 2 fuzzy matching."""
     # "Curran Theatr" is close to "curran theater" alias.
-    venue_id, method = normalizer.normalize("Curran Theatr")
-    assert venue_id == "curran"
+    location_label, method = normalizer.normalize("Curran Theatr")
+    assert location_label == "Curran Theater"
     assert method == "fuzzy"
 
 
 def test_tier2_below_threshold_returns_none() -> None:
     """A completely unrelated name below the fuzzy threshold returns (None, 'unknown')."""
     n = VenueNormalizer(
-        aliases={"curran theater": "curran"},
-        mappings={"curran": _make_mapping("curran", "Curran Theater")},
+        aliases={"curran theater": "Curran Theater"},
+        mappings={"Curran Theater": _make_mapping("Curran Theater")},
         fuzzy_threshold=85,
     )
-    venue_id, method = n.normalize("Oracle Park Baseball Stadium")
-    assert venue_id is None
+    location_label, method = n.normalize("Oracle Park Baseball Stadium")
+    assert location_label is None
     assert method == "unknown"
 
 
@@ -156,10 +155,10 @@ def test_tier2_fuzzy_populates_human_review_when_score_below_95(
     # a review item is added).
     with patch("src.normalizer.fuzz_process.extractOne") as mock_extract:
         mock_extract.return_value = ("curran theater", 88)
-        venue_id, method = n.normalize("Curran Theatr")
+        location_label, method = n.normalize("Curran Theatr")
 
     assert method == "fuzzy"
-    assert venue_id == "curran"
+    assert location_label == "Curran Theater"
     assert len(queue) >= 1
     assert any(item["issue_type"] == "name_mismatch_fuzzy_resolved" for item in queue)
 
@@ -175,11 +174,11 @@ def test_tier3_ai_func_called_when_no_alias_or_fuzzy(mappings: dict) -> None:
 
     def fake_ai(extracted_name: str, canonical_names: list[str]) -> str | None:
         called_with.append(extracted_name)
-        return "sf_symphony"
+        return "Davies Symphony Hall"
 
     n = VenueNormalizer(aliases={}, mappings=mappings, ai_text_func=fake_ai)
-    venue_id, method = n.normalize("Symphony Hall SF")
-    assert venue_id == "sf_symphony"
+    location_label, method = n.normalize("Symphony Hall SF")
+    assert location_label == "Davies Symphony Hall"
     assert method == "ai"
     assert "Symphony Hall SF" in called_with
 
@@ -210,6 +209,7 @@ def test_tier3_ai_returning_unknown_venue_id_gives_unknown(mappings: dict) -> No
 
 def test_tier3_ai_exception_is_caught_and_returns_unknown(mappings: dict) -> None:
     """If the AI function raises, the exception is caught and unknown is returned."""
+
     def bad_ai(name: str, canonical_names: list[str]) -> str | None:
         raise RuntimeError("Simulated API error")
 
@@ -225,11 +225,11 @@ def test_tier3_ai_result_logged_to_human_review(mappings: dict) -> None:
     n = VenueNormalizer(
         aliases={},
         mappings=mappings,
-        ai_text_func=lambda name, names: "curran",
+        ai_text_func=lambda name, names: "Curran Theater",
         human_review_queue=queue,
     )
-    venue_id, method = n.normalize("The Curran SF")
-    assert venue_id == "curran"
+    location_label, method = n.normalize("The Curran SF")
+    assert location_label == "Curran Theater"
     assert method == "ai"
     assert len(queue) >= 1
     assert any(item["issue_type"] == "name_mismatch_ai_resolved" for item in queue)
@@ -294,11 +294,11 @@ def test_no_review_queue_does_not_raise(aliases: dict, mappings: dict) -> None:
 
 
 def test_get_canonical_name_known_venue(normalizer: VenueNormalizer) -> None:
-    """get_canonical_name returns the canonical display name for a known venue_id."""
-    assert normalizer.get_canonical_name("curran") == "Curran Theater"
-    assert normalizer.get_canonical_name("sf_symphony") == "San Francisco Symphony"
+    """get_canonical_name returns the location_label itself for a known label."""
+    assert normalizer.get_canonical_name("Curran Theater") == "Curran Theater"
+    assert normalizer.get_canonical_name("Davies Symphony Hall") == "Davies Symphony Hall"
 
 
 def test_get_canonical_name_unknown_venue(normalizer: VenueNormalizer) -> None:
-    """get_canonical_name returns None for a venue_id not in the mappings."""
-    assert normalizer.get_canonical_name("not_a_real_venue_id") is None
+    """get_canonical_name returns None for a label not in the mappings."""
+    assert normalizer.get_canonical_name("not_a_real_venue") is None

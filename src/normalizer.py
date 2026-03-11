@@ -96,9 +96,7 @@ class VenueNormalizer:
         lowered = extracted_name.strip().lower()
         if lowered in self.aliases:
             venue_id = self.aliases[lowered]
-            logger.debug(
-                "Tier 1 alias match: %r -> %r", extracted_name, venue_id
-            )
+            logger.debug("Tier 1 alias match: %r -> %r", extracted_name, venue_id)
             return (venue_id, "alias")
 
         # ------------------------------------------------------------------
@@ -201,29 +199,29 @@ class VenueNormalizer:
         # ------------------------------------------------------------------
         # All tiers failed
         # ------------------------------------------------------------------
-        logger.error(
-            "All normalization tiers failed for extracted_name=%r", extracted_name
-        )
+        logger.error("All normalization tiers failed for extracted_name=%r", extracted_name)
         self._append_unresolved(
             extracted_name=extracted_name,
             reason="No alias, fuzzy, or AI match found.",
         )
         return (None, "unknown")
 
-    def get_canonical_name(self, venue_id: str) -> str | None:
-        """Return the canonical_name for a venue_id, or None if not found.
+    def get_canonical_name(self, location_label: str) -> str | None:
+        """Return the canonical location_label for a known label, or None if not found.
+
+        Since the mappings dict is keyed by location_label, this returns the
+        label itself when it exists in the mapping — confirming it is a known
+        canonical value.
 
         Args:
-            venue_id: The stable venue identifier to look up.
+            location_label: The location_label string to look up.
 
         Returns:
-            The canonical display name string, or None if venue_id is not in
-            the mappings dict.
+            The location_label string if found in the mappings dict, else None.
         """
-        mapping = self.mappings.get(venue_id)
-        if mapping is None:
+        if location_label not in self.mappings:
             return None
-        return mapping.canonical_name
+        return location_label
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -280,16 +278,11 @@ class VenueNormalizer:
             venue_id="unknown",
             issue_type="name_mismatch_unresolved",
             severity="high",
-            details=(
-                f"Could not resolve extracted venue name {extracted_name!r}. {reason}"
-            ),
+            details=(f"Could not resolve extracted venue name {extracted_name!r}. {reason}"),
             suggested_action=(
-                "Manually identify the correct venue and add an alias to "
-                "venue_aliases.csv."
+                "Manually identify the correct venue and add an alias to venue_aliases.csv."
             ),
-            raw_data=json.dumps(
-                {"extracted_name": extracted_name, "reason": reason}
-            ),
+            raw_data=json.dumps({"extracted_name": extracted_name, "reason": reason}),
         )
 
 

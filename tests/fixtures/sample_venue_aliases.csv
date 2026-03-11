@@ -1,10 +1,10 @@
-alias,canonical_venue_id
-"Curran Theater",curran
-"The Curran",curran
-"Curran SF",curran
-"San Francisco Symphony",sf_symphony
-"SF Symphony",sf_symphony
-"Davies Symphony Hall",sf_symphony
-"ACT Toni Rembe Theater",act_rembe
-"Toni Rembe Theater",act_rembe
-"Geary Theater",act_rembe
+alias,location_label
+"Curran Theater",Curran Theater
+"The Curran",Curran Theater
+"Curran SF",Curran Theater
+"San Francisco Symphony",Davies Symphony Hall
+"SF Symphony",Davies Symphony Hall
+"Davies Symphony Hall",Davies Symphony Hall
+"ACT Toni Rembe Theater",ACT Toni Rembe Theater
+"Toni Rembe Theater",ACT Toni Rembe Theater
+"Geary Theater",ACT Toni Rembe Theater

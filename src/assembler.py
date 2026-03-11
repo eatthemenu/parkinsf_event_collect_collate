@@ -93,6 +93,10 @@ def assemble_event(
     label_raw = raw_event.get("label") or ""
     label = str(label_raw).strip()
 
+    # Use event-source icon override when set (e.g. SF Opera vs SF Ballet at the
+    # same venue); fall back to the venue mapping's default icon.
+    icon = venue_source.icon if venue_source.icon else venue_mapping.icon
+
     assembled: dict[str, Any] = {
         # AI-derived fields
         "label": label,
@@ -103,7 +107,7 @@ def assemble_event(
         "latitude": venue_mapping.latitude,
         "longitude": venue_mapping.longitude,
         "radius": venue_mapping.radius,
-        "icon": venue_mapping.icon,
+        "icon": icon,
         "affected_garages_ids": venue_mapping.affected_garages_ids,
         # Source URL
         "web": source_url,
