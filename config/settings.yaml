@@ -26,8 +26,8 @@ screenshot_overlap_px: 100
 fuzzy_match_threshold: 85
 
 # AI providers
-primary_provider: "claude-sonnet"
-fallback_provider: "gpt-4o"
+primary_provider: "gpt-4o"
+fallback_provider: "gemini-flash"
 
 # Logging
 log_level: "INFO"

@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 _TOKENS_PER_IMAGE = 800
 
 MODEL_IDS: dict[str, str] = {
-    "gemini-flash": "gemini-2.0-flash",
-    "gemini-pro": "gemini-1.5-pro",
+    "gemini-flash": "gemini-2.5-pro",
+    "gemini-pro": "gemini-2.5-pro",
 }
 
 

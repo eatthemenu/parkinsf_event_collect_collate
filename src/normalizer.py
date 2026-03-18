@@ -312,7 +312,7 @@ def make_google_ai_text_func(api_key: str) -> Callable[[str, list[str]], str | N
     import google.genai as genai  # noqa: PLC0415 — deferred to avoid hard dep
 
     _client = genai.Client(api_key=api_key)
-    _model_id = "gemini-2.0-flash"
+    _model_id = "gemini-2.5-pro"
 
     def ai_text_func(extracted_name: str, canonical_names: list[str]) -> str | None:
         """Call Gemini Flash to resolve a raw venue name to a venue_id.
