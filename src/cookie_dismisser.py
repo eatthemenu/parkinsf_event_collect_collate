@@ -66,8 +66,7 @@ async def dismiss_cookie_modal(
             await locator.click(timeout=_SELECTOR_TIMEOUT_MS)
             await asyncio.sleep(0.5)
             logger.info(
-                "dismiss_cookie_modal: dismissed modal for venue_id=%s "
-                "using selector %r",
+                "dismiss_cookie_modal: dismissed modal for venue_id=%s using selector %r",
                 venue_id,
                 css_selector,
             )
@@ -91,16 +90,13 @@ async def dismiss_cookie_modal(
     if provider is None:
         return False
 
-    logger.debug(
-        "dismiss_cookie_modal: attempting AI fallback for venue_id=%s", venue_id
-    )
+    logger.debug("dismiss_cookie_modal: attempting AI fallback for venue_id=%s", venue_id)
 
     try:
         screenshot_bytes: bytes = await page.screenshot()
     except Exception as exc:
         logger.warning(
-            "dismiss_cookie_modal: screenshot for AI fallback failed "
-            "for venue_id=%s: %s",
+            "dismiss_cookie_modal: screenshot for AI fallback failed for venue_id=%s: %s",
             venue_id,
             exc,
         )
@@ -164,8 +160,7 @@ async def dismiss_cookie_modal(
 
     except Exception as exc:
         logger.warning(
-            "dismiss_cookie_modal: AI selector %r click failed for "
-            "venue_id=%s: %s",
+            "dismiss_cookie_modal: AI selector %r click failed for venue_id=%s: %s",
             ai_selector,
             venue_id,
             exc,

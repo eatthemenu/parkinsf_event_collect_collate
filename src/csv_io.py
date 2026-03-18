@@ -99,12 +99,15 @@ def read_event_source_csv(path: Path) -> list[VenueSource]:
                 )
                 continue
 
+            icon = row.get("icon", "").strip()
+
             sources.append(
                 VenueSource(
                     venue_id=venue_id,
                     venue_name=venue_name,
                     schedule_url=schedule_url,
                     site_type=site_type,
+                    icon=icon,
                 )
             )
 

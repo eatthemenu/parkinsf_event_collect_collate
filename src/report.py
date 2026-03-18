@@ -56,7 +56,7 @@ class RunReport:
         # Per-venue tracking
         self._venues_attempted: list[str] = []
         self._venues_succeeded: dict[str, int] = {}  # venue_id -> event_count
-        self._venues_skipped: dict[str, str] = {}    # venue_id -> reason
+        self._venues_skipped: dict[str, str] = {}  # venue_id -> reason
 
         # Human review queue
         self._human_review_items: list[dict] = []
@@ -91,7 +91,9 @@ class RunReport:
         """
         self._venues_succeeded[venue_id] = event_count
         logger.debug(
-            "Venue success recorded: %s (%d events)", venue_id, event_count,
+            "Venue success recorded: %s (%d events)",
+            venue_id,
+            event_count,
             extra={"venue_id": venue_id},
         )
 
@@ -103,9 +105,7 @@ class RunReport:
             reason: Human-readable explanation for why the venue was skipped.
         """
         self._venues_skipped[venue_id] = reason
-        logger.warning(
-            "Venue skipped: %s — %s", venue_id, reason, extra={"venue_id": venue_id}
-        )
+        logger.warning("Venue skipped: %s — %s", venue_id, reason, extra={"venue_id": venue_id})
 
     # ------------------------------------------------------------------
     # Human review queue
@@ -209,9 +209,7 @@ class RunReport:
             total_events_validated=total_events_validated,
             total_events_excluded=total_events_excluded,
         )
-        logger.info(
-            "Run reports written to %s (date suffix: %s)", self.log_dir, self._run_date
-        )
+        logger.info("Run reports written to %s (date suffix: %s)", self.log_dir, self._run_date)
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -237,12 +235,8 @@ class RunReport:
                     int(r.get("output_tokens", 0)) for r in self._cost_records
                 ),
                 "total_estimated_cost_usd": round(self._total_cost_usd, 6),
-                "successful_calls": sum(
-                    1 for r in self._cost_records if r.get("success", False)
-                ),
-                "failed_calls": sum(
-                    1 for r in self._cost_records if not r.get("success", True)
-                ),
+                "successful_calls": sum(1 for r in self._cost_records if r.get("success", False)),
+                "failed_calls": sum(1 for r in self._cost_records if not r.get("success", True)),
             }
             fh.write(json.dumps(summary, default=str) + "\n")
 
@@ -329,8 +323,8 @@ class RunReport:
         provider_costs: dict[str, float] = {}
         for record in self._cost_records:
             provider = str(record.get("provider", "unknown"))
-            provider_costs[provider] = (
-                provider_costs.get(provider, 0.0) + float(record.get("estimated_cost_usd", 0.0))
+            provider_costs[provider] = provider_costs.get(provider, 0.0) + float(
+                record.get("estimated_cost_usd", 0.0)
             )
         if provider_costs:
             lines.append("  Cost by provider:")
@@ -358,9 +352,7 @@ class RunReport:
             queue_pct = len(self._human_review_items) / total_events_extracted * 100
             lines.append(f"  As % of extracted: {queue_pct:.1f}%")
             if queue_pct >= 15.0:
-                lines.append(
-                    "  WARNING: human review queue exceeds 15% quality gate threshold!"
-                )
+                lines.append("  WARNING: human review queue exceeds 15% quality gate threshold!")
 
         if top_issues:
             lines.append("  Top issue types:")

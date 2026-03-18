@@ -1,0 +1,31 @@
+location_label,latitude,longitude,icon,radius,affected_garages_ids,affected_areas
+ACT Toni Rembe Theater,37.787037,-122.410340,/img/event_icon/act.png,0.07,NULL,NULL
+ACT Strand Theater,37.779592,-122.412970,/img/event_icon/act.png,0.07,NULL,NULL
+Oracle Park,37.778390,-122.389400,/img/event_icon/sf_giants.png,0.75,"1,2",NULL
+Bill Graham Civic Auditorium,37.778496,-122.417387,NULL,0.17,23,NULL
+Bimbos 365,37.803791,-122.415356,/img/event_icon/bimbos_365.png,0.14,NULL,NULL
+Columbus and Francisco Streets,37.804388,-122.416033,NULL,0.3,NULL,NULL
+Davies Symphony Hall,37.778090,-122.420600,/img/event_icon/sf_symphony.png,0.14,"16,23",NULL
+Fort Mason,37.806618,-122.438935,NULL,0.7,NULL,NULL
+Golden Gate Park - Hellman Hollow,37.769548,-122.484564,NULL,0.3,NULL,NULL
+Herbst Theatre,37.779630,-122.420460,NULL,0.14,"16,23",NULL
+Masonic Center,37.791270,-122.412900,/img/event_icon/sf_masonic.png,0.14,NULL,NULL
+Moscone North South,37.783670,-122.400600,/img/event_icon/moscone.png,0.3,NULL,NULL
+Moscone North South West,37.783670,-122.400600,/img/event_icon/moscone.png,0.3,NULL,NULL
+Moscone South,37.783910,-122.400230,/img/event_icon/moscone.png,0.2,NULL,NULL
+Moscone West,37.783090,-122.404000,/img/event_icon/moscone.png,0.2,NULL,NULL
+Sydney Goldstein Theater,37.777102,-122.420847,/img/event_icon/nourse_theater.png,0.13,"16, 23",NULL
+Orpheum Theatre,37.779077,-122.414637,/img/event_icon/shn.png,0.14,NULL,NULL
+SF Conservatory,37.775410,-122.420292,/img/event_icon/sf_jazz.png,0.14,"16,23",NULL
+SF Jazz - Digital Labs,37.776512,-122.421482,/img/event_icon/sf_jazz.png,0.14,"16,23",NULL
+SF Jazz - Henderson Lab,37.776456,-122.421647,/img/event_icon/sf_jazz.png,0.14,"16,23",NULL
+SF Jazz - Miner Auditorium,37.776337,-122.421682,/img/event_icon/sf_jazz.png,0.14,"16,23",NULL
+SF Jazz Center,37.776216,-122.421301,/img/event_icon/sf_jazz.png,0.14,"16,23",NULL
+Taube Atrium Theater,37.778600,-122.420800,/img/event_icon/sf_opera.png,0.14,"16,23",NULL
+The Fillmore,37.783906,-122.433074,NULL,0.14,NULL,NULL
+The Regency,37.787880,-122.421410,/img/event_icon/regency.png,0.14,NULL,NULL
+The Warfield,37.782760,-122.410270,/img/event_icon/warfield.png,0.14,NULL,NULL
+War Memorial Opera House,37.778600,-122.420800,/img/event_icon/sf_ballet.png,0.14,"16,23",NULL
+War Memorial Opera House,37.778600,-122.420800,/img/event_icon/sf_opera.png,0.14,"16,23",NULL
+War Memorial Opera House,37.778600,-122.420800,/img/event_icon/shn.png,0.14,NULL,NULL
+Wilsey Center for Opera,37.778600,-122.420800,/img/event_icon/sf_opera.png,0.14,"16,23",NULL

@@ -1,4 +1,5 @@
 """Anthropic Claude vision provider."""
+
 import base64
 import json
 import logging
@@ -56,9 +57,7 @@ class AnthropicProvider(VisionProvider):
             ValueError: If model_key is not recognized.
         """
         if model_key not in MODEL_IDS:
-            raise ValueError(
-                f"Unknown model_key '{model_key}'. Must be one of: {list(MODEL_IDS)}"
-            )
+            raise ValueError(f"Unknown model_key '{model_key}'. Must be one of: {list(MODEL_IDS)}")
         self._model_key = model_key
         self._model_id = MODEL_IDS[model_key]
         self._cost_tracker = cost_tracker
@@ -147,9 +146,7 @@ class AnthropicProvider(VisionProvider):
         # Save raw response to disk
         response_dir = self._data_dir / "ai_responses"
         response_dir.mkdir(parents=True, exist_ok=True)
-        response_path = (
-            response_dir / f"{venue_id}_{timestamp_str}_response_anthropic.json"
-        )
+        response_path = response_dir / f"{venue_id}_{timestamp_str}_response_anthropic.json"
         _save_raw_response(response_path, raw_text, venue_id, self._model_id, now)
 
         # Record cost
@@ -168,14 +165,10 @@ class AnthropicProvider(VisionProvider):
 
         # Parse events from response
         events = _parse_events_from_text(raw_text, venue_id, self._model_id)
-        logger.info(
-            "AnthropicProvider extracted %d events for venue_id=%s", len(events), venue_id
-        )
+        logger.info("AnthropicProvider extracted %d events for venue_id=%s", len(events), venue_id)
         return events
 
-    def _record_failed_call(
-        self, venue_id: str, timestamp: datetime, error_message: str
-    ) -> None:
+    def _record_failed_call(self, venue_id: str, timestamp: datetime, error_message: str) -> None:
         """Record a failed API call with zero cost.
 
         Args:
@@ -247,9 +240,7 @@ def _strip_markdown_fences(text: str) -> str:
     return text.strip()
 
 
-def _parse_events_from_text(
-    raw_text: str, venue_id: str, model_id: str
-) -> list[dict]:
+def _parse_events_from_text(raw_text: str, venue_id: str, model_id: str) -> list[dict]:
     """Parse RawExtractedEvent dicts from AI response text.
 
     Args:
@@ -315,6 +306,4 @@ def _save_raw_response(
         path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         logger.debug("AnthropicProvider saved raw response to %s", path)
     except OSError as exc:
-        logger.warning(
-            "AnthropicProvider could not save raw response to %s: %s", path, exc
-        )
+        logger.warning("AnthropicProvider could not save raw response to %s: %s", path, exc)

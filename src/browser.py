@@ -121,8 +121,7 @@ class BrowserController:
         self._venues_since_restart += 1
 
         logger.debug(
-            "Created isolated browser context for venue_id=%s "
-            "(venues_since_restart=%d)",
+            "Created isolated browser context for venue_id=%s (venues_since_restart=%d)",
             venue_id,
             self._venues_since_restart,
         )
@@ -134,9 +133,7 @@ class BrowserController:
                 await context.close()
                 logger.debug("Browser context closed for venue_id=%s", venue_id)
             except Exception as exc:
-                logger.warning(
-                    "Error closing browser context for venue_id=%s: %s", venue_id, exc
-                )
+                logger.warning("Error closing browser context for venue_id=%s: %s", venue_id, exc)
 
     # ------------------------------------------------------------------
     # Private helpers

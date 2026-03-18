@@ -71,9 +71,7 @@ def validate_event(
         if not location_label:
             errors.append("location_label: must be non-empty")
         elif len(location_label) > 255:
-            errors.append(
-                f"location_label: exceeds 255 characters (got {len(location_label)})"
-            )
+            errors.append(f"location_label: exceeds 255 characters (got {len(location_label)})")
 
     # --- latitude ---
     latitude_raw = event.get("latitude")
@@ -83,9 +81,7 @@ def validate_event(
         try:
             latitude = float(latitude_raw)
             if not (37.0 <= latitude <= 38.0):
-                errors.append(
-                    f"latitude: {latitude} is outside SF Bay Area range [37.0, 38.0]"
-                )
+                errors.append(f"latitude: {latitude} is outside SF Bay Area range [37.0, 38.0]")
         except (ValueError, TypeError):
             errors.append(f"latitude: cannot convert {latitude_raw!r} to float")
 
@@ -123,17 +119,13 @@ def validate_event(
         try:
             event_date = datetime.strptime(str(date_raw).strip(), "%Y-%m-%d").date()
             if event_date < today:
-                errors.append(
-                    f"event_start_date: {event_date} is in the past (today is {today})"
-                )
+                errors.append(f"event_start_date: {event_date} is in the past (today is {today})")
             elif event_date > max_future_date:
                 errors.append(
                     f"event_start_date: {event_date} exceeds max future date {max_future_date}"
                 )
         except ValueError:
-            errors.append(
-                f"event_start_date: {date_raw!r} is not a valid YYYY-MM-DD date"
-            )
+            errors.append(f"event_start_date: {date_raw!r} is not a valid YYYY-MM-DD date")
 
     # --- event_start_time ---
     time_raw = event.get("event_start_time")
@@ -147,13 +139,10 @@ def validate_event(
             max_time = datetime.strptime("23:59:59", "%H:%M:%S").time()
             if not (min_time <= parsed_time <= max_time):
                 errors.append(
-                    f"event_start_time: {time_str} is outside allowed range"
-                    " [06:00:00, 23:59:59]"
+                    f"event_start_time: {time_str} is outside allowed range [06:00:00, 23:59:59]"
                 )
         except ValueError:
-            errors.append(
-                f"event_start_time: {time_raw!r} is not a valid HH:MM:SS time"
-            )
+            errors.append(f"event_start_time: {time_raw!r} is not a valid HH:MM:SS time")
 
     # --- web ---
     web_raw = event.get("web")
@@ -182,9 +171,7 @@ def validate_event(
     garages_str = "" if garages_raw is None else str(garages_raw).strip()
 
     if len(garages_str) > 1024:
-        errors.append(
-            f"affected_garages_ids: exceeds 1024 characters (got {len(garages_str)})"
-        )
+        errors.append(f"affected_garages_ids: exceeds 1024 characters (got {len(garages_str)})")
     elif not _AFFECTED_GARAGES_PATTERN.match(garages_str):
         errors.append(
             f"affected_garages_ids: {garages_str!r} does not match"
@@ -245,8 +232,7 @@ def deduplicate_events(events: list[dict]) -> list[dict]:
             first_index, current_best, current_score = seen[key]
             if score > current_score:
                 logger.debug(
-                    "Duplicate event: replacing record with score %d with score %d"
-                    " for key %s",
+                    "Duplicate event: replacing record with score %d with score %d for key %s",
                     current_score,
                     score,
                     key,

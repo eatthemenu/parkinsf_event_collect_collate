@@ -36,13 +36,13 @@ def multi_venue_source() -> VenueSource:
 def curran_mapping() -> VenueMapping:
     """Return a VenueMapping for Curran Theater."""
     return VenueMapping(
-        venue_id="curran",
-        canonical_name="Curran Theater",
+        location_label="Curran Theater",
         latitude=37.7862,
         longitude=-122.4123,
-        radius=0.3,
         icon="theater",
+        radius=0.3,
         affected_garages_ids="1",
+        affected_areas="",
     )
 
 
@@ -128,9 +128,7 @@ def test_multi_venue_uses_ai_location_label(
         "event_start_date": "2026-05-01",
         "event_start_time": "20:00:00",
     }
-    result = _assemble(
-        raw, multi_venue_source, curran_mapping, canonical_venue_name="ACT"
-    )
+    result = _assemble(raw, multi_venue_source, curran_mapping, canonical_venue_name="ACT")
     assert result["location_label"] == "Toni Rembe Theater"
 
 
@@ -144,9 +142,7 @@ def test_multi_venue_none_location_label_becomes_empty_string(
         "event_start_date": "2026-05-01",
         "event_start_time": "20:00:00",
     }
-    result = _assemble(
-        raw, multi_venue_source, curran_mapping, canonical_venue_name="ACT"
-    )
+    result = _assemble(raw, multi_venue_source, curran_mapping, canonical_venue_name="ACT")
     assert result["location_label"] == ""
 
 
@@ -200,9 +196,28 @@ def test_latitude_longitude_radius_from_mapping(
 def test_icon_from_mapping(
     raw_event: dict, single_venue_source: VenueSource, curran_mapping: VenueMapping
 ) -> None:
-    """icon must come from the venue_mapping."""
+    """icon falls back to venue_mapping when venue_source.icon is empty."""
     result = _assemble(raw_event, single_venue_source, curran_mapping)
     assert result["icon"] == "theater"
+
+
+def test_icon_override_from_venue_source(raw_event: dict, curran_mapping: VenueMapping) -> None:
+    """A non-empty venue_source.icon overrides the venue_mapping icon."""
+    source_with_icon = VenueSource(
+        venue_id="war_memorial_opera",
+        venue_name="War Memorial Opera House",
+        schedule_url="https://sfopera.com/season-tickets-and-more/",
+        site_type="single_venue",
+        icon="/img/event_icon/sf_opera.png",
+    )
+    result = assemble_event(
+        raw_event=raw_event,
+        venue_source=source_with_icon,
+        venue_mapping=curran_mapping,
+        canonical_venue_name="War Memorial Opera House",
+        source_url="https://sfopera.com/season-tickets-and-more/",
+    )
+    assert result["icon"] == "/img/event_icon/sf_opera.png"
 
 
 def test_affected_garages_ids_from_mapping(
@@ -288,8 +303,12 @@ def test_none_date_time_passed_through(
     single_venue_source: VenueSource, curran_mapping: VenueMapping
 ) -> None:
     """None date and time values from raw_event should be preserved as None."""
-    raw = {"label": "Unknown", "location_label": None, "event_start_date": None,
-           "event_start_time": None}
+    raw = {
+        "label": "Unknown",
+        "location_label": None,
+        "event_start_date": None,
+        "event_start_time": None,
+    }
     result = _assemble(raw, single_venue_source, curran_mapping)
     assert result["event_start_date"] is None
     assert result["event_start_time"] is None

@@ -1,4 +1,5 @@
 """Google Gemini vision provider."""
+
 import asyncio
 import json
 import logging
@@ -18,8 +19,8 @@ logger = logging.getLogger(__name__)
 _TOKENS_PER_IMAGE = 800
 
 MODEL_IDS: dict[str, str] = {
-    "gemini-flash": "gemini-2.5-flash-preview-04-17",
-    "gemini-pro": "gemini-2.0-flash",
+    "gemini-flash": "gemini-2.5-pro",
+    "gemini-pro": "gemini-2.5-pro",
 }
 
 
@@ -58,9 +59,7 @@ class GoogleProvider(VisionProvider):
             ValueError: If model_key is not recognized.
         """
         if model_key not in MODEL_IDS:
-            raise ValueError(
-                f"Unknown model_key '{model_key}'. Must be one of: {list(MODEL_IDS)}"
-            )
+            raise ValueError(f"Unknown model_key '{model_key}'. Must be one of: {list(MODEL_IDS)}")
         self._model_key = model_key
         self._model_id = MODEL_IDS[model_key]
         self._cost_tracker = cost_tracker
@@ -94,9 +93,7 @@ class GoogleProvider(VisionProvider):
         def _run_sync() -> types.GenerateContentResponse:
             contents: list = []
             for img_bytes in screenshots:
-                contents.append(
-                    types.Part.from_bytes(data=img_bytes, mime_type="image/png")
-                )
+                contents.append(types.Part.from_bytes(data=img_bytes, mime_type="image/png"))
             contents.append(types.Part.from_text(text=prompt))
             return self._client.models.generate_content(
                 model=self._model_id,
@@ -157,14 +154,10 @@ class GoogleProvider(VisionProvider):
 
         # Parse events from response
         events = _parse_events_from_text(raw_text, venue_id, self._model_id)
-        logger.info(
-            "GoogleProvider extracted %d events for venue_id=%s", len(events), venue_id
-        )
+        logger.info("GoogleProvider extracted %d events for venue_id=%s", len(events), venue_id)
         return events
 
-    def _record_failed_call(
-        self, venue_id: str, timestamp: datetime, error_message: str
-    ) -> None:
+    def _record_failed_call(self, venue_id: str, timestamp: datetime, error_message: str) -> None:
         """Record a failed API call with zero cost.
 
         Args:
@@ -213,7 +206,7 @@ class GoogleProvider(VisionProvider):
         """Return the full model ID being used.
 
         Returns:
-            The Gemini model ID string, e.g. 'gemini-2.5-flash-preview-04-17'.
+            The Gemini model ID string, e.g. 'gemini-2.0-flash'.
         """
         return self._model_id
 
@@ -236,9 +229,7 @@ def _strip_markdown_fences(text: str) -> str:
     return text.strip()
 
 
-def _parse_events_from_text(
-    raw_text: str, venue_id: str, model_id: str
-) -> list[dict]:
+def _parse_events_from_text(raw_text: str, venue_id: str, model_id: str) -> list[dict]:
     """Parse RawExtractedEvent dicts from AI response text.
 
     Args:

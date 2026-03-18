@@ -24,36 +24,46 @@ class VenueSource:
         venue_name: Human-readable venue name.
         schedule_url: Full URL of the venue's schedule page.
         site_type: Either ``"single_venue"`` or ``"multi_venue"``.
+        icon: Optional icon path override for this source.  When set, it takes
+            precedence over the icon from the venue mapping.  Use this when the
+            same physical venue hosts events from multiple producers that each
+            have their own icon (e.g. SF Opera vs SF Ballet at War Memorial).
     """
 
     venue_id: str
     venue_name: str
     schedule_url: str
     site_type: str
+    icon: str = ""
 
 
 @dataclass
 class VenueMapping:
-    """Geographic and display metadata for a venue, loaded from venue_mappings.csv.
+    """Geographic and display metadata for a venue, loaded from venue_to_lat_lon_mapping.csv.
 
     Attributes:
-        venue_id: Stable, unique identifier matching VenueSource.venue_id.
-        canonical_name: The authoritative display name for this venue.
+        location_label: The authoritative display name for this venue, used as
+            the primary key.  Matches the ``location_label`` field in the output
+            CSV and the MySQL events table.
         latitude: WGS-84 latitude of the venue.
         longitude: WGS-84 longitude of the venue.
+        icon: Icon path string for the parking app UI (e.g.
+            ``"/img/event_icon/sf_opera.png"``).  May be overridden by
+            :attr:`VenueSource.icon` when the same venue hosts events from
+            multiple producers.
         radius: Radius (in miles) around the venue used by the parking app.
-        icon: Icon identifier string for the parking app UI.
         affected_garages_ids: Comma-separated garage IDs as a raw string
-            (e.g. ``"12,34,56"``).
+            (e.g. ``"12,34"``), or empty string if none.
+        affected_areas: Reserved field; currently always empty.
     """
 
-    venue_id: str
-    canonical_name: str
+    location_label: str
     latitude: float
     longitude: float
-    radius: float
     icon: str
+    radius: float
     affected_garages_ids: str
+    affected_areas: str
 
 
 @dataclass
@@ -122,9 +132,7 @@ def load_settings(config_dir: Path) -> Settings:
     settings_path = config_dir / "settings.yaml"
 
     if not settings_path.exists():
-        logger.warning(
-            "settings.yaml not found at %s — using all defaults", settings_path
-        )
+        logger.warning("settings.yaml not found at %s — using all defaults", settings_path)
         return Settings()
 
     with settings_path.open("r", encoding="utf-8") as fh:
@@ -152,36 +160,49 @@ def load_settings(config_dir: Path) -> Settings:
 
 
 def load_venue_mappings(config_dir: Path) -> dict[str, VenueMapping]:
-    """Load venue geographic and display metadata from venue_mappings.csv.
+    """Load venue geographic and display metadata from venue_to_lat_lon_mapping.csv.
 
     The CSV must contain the following headers (in any order):
-    ``venue_id``, ``canonical_name``, ``latitude``, ``longitude``,
-    ``radius``, ``icon``, ``affected_garages_ids``.
+    ``location_label``, ``latitude``, ``longitude``, ``icon``, ``radius``,
+    ``affected_garages_ids``, ``affected_areas``.
+
+    The dict is keyed by ``location_label``.  If the CSV contains duplicate
+    ``location_label`` values (e.g. War Memorial Opera House appearing multiple
+    times with different icons), the last row wins and a warning is logged.
+    Use the ``icon`` column on the Event Source CSV to select the correct icon
+    per producer for such venues.
+
+    The string ``"NULL"`` in any field is normalised to an empty string.
 
     Args:
-        config_dir: Directory that contains ``venue_mappings.csv``.
+        config_dir: Directory that contains ``venue_to_lat_lon_mapping.csv``.
 
     Returns:
-        Dict mapping ``venue_id`` strings to :class:`VenueMapping` instances.
+        Dict mapping ``location_label`` strings to :class:`VenueMapping` instances.
 
     Raises:
-        FileNotFoundError: If ``venue_mappings.csv`` does not exist.
+        FileNotFoundError: If ``venue_to_lat_lon_mapping.csv`` does not exist.
         ValueError: If required columns are absent from the CSV header.
     """
-    mappings_path = config_dir / "venue_mappings.csv"
+    mappings_path = config_dir / "venue_to_lat_lon_mapping.csv"
 
     if not mappings_path.exists():
-        raise FileNotFoundError(f"venue_mappings.csv not found at {mappings_path}")
+        raise FileNotFoundError(f"venue_to_lat_lon_mapping.csv not found at {mappings_path}")
 
     required_columns = {
-        "venue_id",
-        "canonical_name",
+        "location_label",
         "latitude",
         "longitude",
-        "radius",
         "icon",
+        "radius",
         "affected_garages_ids",
+        "affected_areas",
     }
+
+    def _null_to_empty(value: str) -> str:
+        """Return empty string for the literal string 'NULL', else strip whitespace."""
+        stripped = value.strip()
+        return "" if stripped.upper() == "NULL" else stripped
 
     result: dict[str, VenueMapping] = {}
 
@@ -189,58 +210,71 @@ def load_venue_mappings(config_dir: Path) -> dict[str, VenueMapping]:
         reader = csv.DictReader(fh)
 
         if reader.fieldnames is None:
-            logger.warning("venue_mappings.csv appears to be empty")
+            logger.warning("venue_to_lat_lon_mapping.csv appears to be empty")
             return result
 
         present = set(reader.fieldnames)
         missing = required_columns - present
         if missing:
             raise ValueError(
-                f"venue_mappings.csv is missing required columns: {sorted(missing)}"
+                f"venue_to_lat_lon_mapping.csv is missing required columns: {sorted(missing)}"
             )
 
         for row_num, row in enumerate(reader, start=2):
-            venue_id = row.get("venue_id", "").strip()
-            if not venue_id:
-                logger.warning("Row %d in venue_mappings.csv has no venue_id — skipped", row_num)
+            location_label = _null_to_empty(row.get("location_label", ""))
+            if not location_label:
+                logger.warning(
+                    "Row %d in venue_to_lat_lon_mapping.csv has no location_label — skipped",
+                    row_num,
+                )
                 continue
+
+            if location_label in result:
+                logger.warning(
+                    "Row %d: duplicate location_label %r in venue_to_lat_lon_mapping.csv"
+                    " — last row wins (use event source icon override for producer-specific icons)",
+                    row_num,
+                    location_label,
+                )
 
             try:
                 mapping = VenueMapping(
-                    venue_id=venue_id,
-                    canonical_name=row["canonical_name"].strip(),
+                    location_label=location_label,
                     latitude=float(row["latitude"]),
                     longitude=float(row["longitude"]),
+                    icon=_null_to_empty(row["icon"]),
                     radius=float(row["radius"]),
-                    icon=row["icon"].strip(),
-                    affected_garages_ids=row["affected_garages_ids"].strip(),
+                    affected_garages_ids=_null_to_empty(row["affected_garages_ids"])
+                    .replace(", ", ",")
+                    .replace(" ,", ","),
+                    affected_areas=_null_to_empty(row["affected_areas"]),
                 )
             except (ValueError, KeyError) as exc:
                 logger.warning(
-                    "Row %d in venue_mappings.csv could not be parsed (%s) — skipped",
+                    "Row %d in venue_to_lat_lon_mapping.csv could not be parsed (%s) — skipped",
                     row_num,
                     exc,
                 )
                 continue
 
-            result[venue_id] = mapping
+            result[location_label] = mapping
 
     logger.debug("Loaded %d venue mappings from %s", len(result), mappings_path)
     return result
 
 
 def load_venue_aliases(config_dir: Path) -> dict[str, str]:
-    """Load the alias-to-canonical-venue mapping from venue_aliases.csv.
+    """Load the alias-to-location-label mapping from venue_aliases.csv.
 
     The CSV must contain at least two columns: ``alias`` and
-    ``canonical_venue_id``.  Alias keys are lowercased so lookups are
+    ``location_label``.  Alias keys are lowercased so lookups are
     case-insensitive.
 
     Args:
         config_dir: Directory that contains ``venue_aliases.csv``.
 
     Returns:
-        Dict mapping lowercase alias strings to canonical venue ID strings.
+        Dict mapping lowercase alias strings to ``location_label`` strings.
 
     Raises:
         FileNotFoundError: If ``venue_aliases.csv`` does not exist.
@@ -251,7 +285,7 @@ def load_venue_aliases(config_dir: Path) -> dict[str, str]:
     if not aliases_path.exists():
         raise FileNotFoundError(f"venue_aliases.csv not found at {aliases_path}")
 
-    required_columns = {"alias", "canonical_venue_id"}
+    required_columns = {"alias", "location_label"}
     result: dict[str, str] = {}
 
     with aliases_path.open("r", encoding="utf-8", newline="") as fh:
@@ -264,29 +298,24 @@ def load_venue_aliases(config_dir: Path) -> dict[str, str]:
         present = set(reader.fieldnames)
         missing = required_columns - present
         if missing:
-            raise ValueError(
-                f"venue_aliases.csv is missing required columns: {sorted(missing)}"
-            )
+            raise ValueError(f"venue_aliases.csv is missing required columns: {sorted(missing)}")
 
         for row_num, row in enumerate(reader, start=2):
             alias = row.get("alias", "").strip()
-            canonical_id = row.get("canonical_venue_id", "").strip()
+            location_label = row.get("location_label", "").strip()
 
             if not alias:
-                logger.warning(
-                    "Row %d in venue_aliases.csv has an empty alias — skipped", row_num
-                )
+                logger.warning("Row %d in venue_aliases.csv has an empty alias — skipped", row_num)
                 continue
-            if not canonical_id:
+            if not location_label:
                 logger.warning(
-                    "Row %d in venue_aliases.csv has no canonical_venue_id for alias %r"
-                    " — skipped",
+                    "Row %d in venue_aliases.csv has no location_label for alias %r — skipped",
                     row_num,
                     alias,
                 )
                 continue
 
-            result[alias.lower()] = canonical_id
+            result[alias.lower()] = location_label
 
     logger.debug("Loaded %d venue aliases from %s", len(result), aliases_path)
     return result
@@ -322,8 +351,7 @@ def load_cookie_selectors(config_dir: Path) -> list[dict]:
 
     if not isinstance(raw, list):
         logger.warning(
-            "cookie_selectors.yaml top-level value is not a list (got %s)"
-            " — no selectors loaded",
+            "cookie_selectors.yaml top-level value is not a list (got %s) — no selectors loaded",
             type(raw).__name__,
         )
         return []

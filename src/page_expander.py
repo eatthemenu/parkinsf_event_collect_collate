@@ -75,9 +75,7 @@ async def expand_page(page: Page, settings: Settings) -> None:
         await asyncio.sleep(settings.scroll_pause_seconds)
 
     if load_more_clicks > 0:
-        logger.info(
-            "Total 'Load More' clicks on %s: %d", page.url, load_more_clicks
-        )
+        logger.info("Total 'Load More' clicks on %s: %d", page.url, load_more_clicks)
 
     # Step 3: Scroll to bottom again after loading more content.
     await _scroll_to_bottom(page, settings.scroll_pause_seconds)
@@ -98,9 +96,7 @@ async def expand_page(page: Page, settings: Settings) -> None:
         await asyncio.sleep(settings.scroll_pause_seconds)
 
     if calendar_clicks > 0:
-        logger.info(
-            "Total calendar page turns on %s: %d", page.url, calendar_clicks
-        )
+        logger.info("Total calendar page turns on %s: %d", page.url, calendar_clicks)
 
     # Step 5: Final scroll to bottom.
     await _scroll_to_bottom(page, settings.scroll_pause_seconds)
@@ -146,9 +142,7 @@ async def _try_click_load_more(page: Page) -> bool:
             logger.debug("_try_click_load_more: clicked selector %r", selector)
             return True
         except Exception as exc:
-            logger.debug(
-                "_try_click_load_more: selector %r not usable (%s)", selector, exc
-            )
+            logger.debug("_try_click_load_more: selector %r not usable (%s)", selector, exc)
             continue
     return False
 
@@ -169,9 +163,7 @@ async def _try_click_calendar_next(page: Page) -> bool:
             if not is_visible:
                 continue
             await locator.click(timeout=3000)
-            logger.debug(
-                "_try_click_calendar_next: clicked selector %r", selector
-            )
+            logger.debug("_try_click_calendar_next: clicked selector %r", selector)
             return True
         except Exception as exc:
             logger.debug(
